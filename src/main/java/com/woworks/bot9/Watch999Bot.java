@@ -4,6 +4,7 @@ import com.woworks.common.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -20,6 +21,7 @@ public class Watch999Bot extends TelegramLongPollingBot {
             LOG.info("Text From Bot: UserId: {}", update.getMessage().getFrom());
             SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
                     .setChatId(update.getMessage().getChatId())
+                    .setParseMode(ParseMode.HTML)
                     .setText(update.getMessage().getText());
             try {
                 execute(message); // Call method to send the message

@@ -29,6 +29,12 @@ public class HelloService {
     }
 
     @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return "hello";
+    }
+
+    @GET
     @Path("/categories")
     @Produces(MediaType.APPLICATION_JSON)
     public Set<Category> categories() {
@@ -36,29 +42,18 @@ public class HelloService {
     }
 
     @GET
-    @Path("/adverts/{id}")
+    @Path("/adverts-api/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Advert advert(@PathParam("id") String id) {
+    public Advert advertApi(@PathParam("id") String id) {
         return categoryService.getAdvert(id);
     }
 
+
     @GET
-    @Path("/aaaa/{id}")
+    @Path("/adverts/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Advert advert2(@PathParam("id") String id) {
+    public Advert advert(@PathParam("id") String id) {
         return scrapperService.getAdvert(id);
     }
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    @Path("/greeting/{name}")
-    public String greeting(@PathParam("name") String name) {
-        return categoryService.getByName(name).toString();
-    }
-
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
-        return "hello";
-    }
 }

@@ -17,7 +17,7 @@ public class BotConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger("BotConfiguration");
 
-/*    void onStart(@Observes StartupEvent ev) {
+    void onStart(@Observes StartupEvent ev) {
         LOG.info("The application is starting...");
         ApiContextInitializer.init();
         LOG.info("ApiContextInitializer was initialized...");
@@ -28,7 +28,7 @@ public class BotConfiguration {
         } catch (TelegramApiException e) {
             LOG.error("Could not register bot", e);
         }
-    }*/
+    }
 
     void onStop(@Observes ShutdownEvent ev) {
         LOG.info("The application is stopping...");
