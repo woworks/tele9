@@ -1,7 +1,10 @@
 package com.woworks.client9.model;
 
+import java.util.Arrays;
+
 public class Advert {
-    private String id;
+    private Long id;
+
     private String title;
     private Price price;
     private String body;
@@ -26,8 +29,8 @@ public class Advert {
     /**
      * ID of the advert
      */
-    public String getId() { return id; }
-    public void setId(String value) { this.id = value; }
+    public Long getId() { return id; }
+    public void setId(Long value) { this.id = value; }
 
     public OfferType getOfferType() { return offerType; }
     public void setOfferType(OfferType value) { this.offerType = value; }
@@ -46,4 +49,18 @@ public class Advert {
      */
     public String getTitle() { return title; }
     public void setTitle(String value) { this.title = value; }
+
+    @Override
+    public String toString() {
+        return "Advert{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", price=" + price +
+                ", body='" + body + '\'' +
+                ", categories=" + categories +
+                ", features=" + Arrays.toString(features) +
+                ", offerType=" + offerType +
+                ", state=" + state +
+                '}';
+    }
 }

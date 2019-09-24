@@ -14,4 +14,12 @@ public class Price {
 
     public double getValue() { return value; }
     public void setValue(double value) { this.value = value; }
+
+    @Override
+    public String toString() {
+        return "Price{" +
+                "unit='" + unit + '\'' +
+                ", value=" + value +
+                '}';
+    }
 }

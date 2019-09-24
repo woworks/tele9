@@ -1,5 +1,6 @@
 package com.woworks.bot9;
 
+import com.woworks.client9.model.AdvertHistory;
 import com.woworks.scheduling.AdvertWatcherService;
 
 import javax.inject.Inject;
@@ -40,6 +41,13 @@ public class WatchService {
     @Produces(MediaType.APPLICATION_JSON)
     public Set<Long> list(@PathParam("id") Long userId) {
         return advertWatcherService.getUserAdvertIds(userId);
+    }
+
+    @GET
+    @Path("/user/{id}/history")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AdvertHistory history(@PathParam("id") Long userId) {
+        return advertWatcherService.getUserAdvertsHistory(userId);
     }
 
 }

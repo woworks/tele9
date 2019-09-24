@@ -52,7 +52,7 @@ public class HelloService {
     @GET
     @Path("/adverts/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Advert advert(@PathParam("id") String id) {
+    public Advert advert(@PathParam("id") Long id) {
         return scrapperService.getAdvert(id);
     }
 
