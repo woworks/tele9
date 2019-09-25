@@ -1,10 +1,16 @@
 package com.woworks.client9.model;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdvertHistory {
     private Advert advert;
-    private Set<PriceChange> priceHistory;
+    private List<PriceChange> priceHistory = new ArrayList<>();
+
+    public AdvertHistory(Advert advert, List<PriceChange> priceHistory) {
+        this.advert = advert;
+        this.priceHistory = priceHistory;
+    }
 
     public Advert getAdvert() {
         return advert;
@@ -14,11 +20,11 @@ public class AdvertHistory {
         this.advert = advert;
     }
 
-    public Set<PriceChange> getPriceHistory() {
+    public List<PriceChange> getPriceHistory() {
         return priceHistory;
     }
 
-    public void setPriceHistory(Set<PriceChange> priceHistory) {
+    public void setPriceHistory(List<PriceChange> priceHistory) {
         this.priceHistory = priceHistory;
     }
 

@@ -6,6 +6,11 @@ public class PriceChange {
     private Price price;
     private LocalDateTime dateTime;
 
+    public PriceChange(Price price, LocalDateTime dateTime) {
+        this.price = price;
+        this.dateTime = dateTime;
+    }
+
     public Price getPrice() {
         return price;
     }
@@ -20,5 +25,13 @@ public class PriceChange {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    @Override
+    public String toString() {
+        return "PriceChange{" +
+                "price=" + price +
+                ", dateTime=" + dateTime +
+                '}';
     }
 }
