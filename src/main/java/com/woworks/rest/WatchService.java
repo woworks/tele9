@@ -1,4 +1,4 @@
-package com.woworks.bot9;
+package com.woworks.rest;
 
 import com.woworks.client9.model.AdvertHistory;
 import com.woworks.scheduling.AdvertWatcherService;
@@ -22,30 +22,29 @@ public class WatchService {
         this.advertWatcherService = advertWatcherService;
     }
 
-
     @GET
-    @Path("/user/{id}/unwatch/{advertId}")
+    @Path("/users/{id}/unwatch/{advertId}")
     @Produces(MediaType.APPLICATION_JSON)
     public void unwatch(@PathParam("id") Long userId, @PathParam("advertId") Long advertId) {
         advertWatcherService.unwatchAdvert(userId, advertId);
     }
 
     @GET
-    @Path("/user/{id}/watch/{advertId}")
+    @Path("/users/{id}/watch/{advertId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public void watch(@PathParam("id") Long userId, @PathParam("advertId") Long advertId) {
-        advertWatcherService.watchAdvert(userId, advertId);
+    public List<AdvertHistory> watch(@PathParam("id") Long userId, @PathParam("advertId") Long advertId) {
+        return advertWatcherService.watchAdvert(userId, advertId);
     }
 
     @GET
-    @Path("/user/{id}/list")
+    @Path("/users/{id}/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Set<Long> list(@PathParam("id") Long userId) {
         return advertWatcherService.getUserAdvertIds(userId);
     }
 
     @GET
-    @Path("/user/{id}/history")
+    @Path("/users/{id}/history")
     @Produces(MediaType.APPLICATION_JSON)
     public List<AdvertHistory> history(@PathParam("id") Long userId) {
         return advertWatcherService.getUserAdvertsHistory(userId);

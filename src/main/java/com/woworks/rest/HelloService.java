@@ -1,4 +1,4 @@
-package com.woworks.bot9;
+package com.woworks.rest;
 
 import com.woworks.client9.model.Advert;
 import com.woworks.client9.model.Category;

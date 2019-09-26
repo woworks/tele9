@@ -52,8 +52,10 @@ public class AdvertWatcherService implements AdvertWatcher {
             Map<Long, List<PriceChange>> userAdvertHistoryMap = userAdvertHist != null ? userAdvertHist : new HashMap<>();
 
             userAdList.forEach(adId -> {
-                try {
-                    Advert advert = advertsCache.get(adId);
+
+                    //Advert advert = advertsCache.get(adId);
+                    Advert advert = scrapperService.getAdvert(adId);
+                    advertsCache.put(adId, advert);
                     //LOG.debug("advert: {}", advert);
                     PriceChange priceChange = new PriceChange(advert.getPrice(), LocalDateTime.now());
                     List<PriceChange> advertHistory = new ArrayList<>();
@@ -70,17 +72,12 @@ public class AdvertWatcherService implements AdvertWatcher {
                     } else {
                         LOG.debug("NEW ADV HIST = {}; price change = {}", advertHistory, priceChange);
                         LOG.debug("userAdvertHistoryMap NEW  = {}", userAdvertHistoryMap.keySet());
-                        userAdvertHistoryMap.put(adId, Arrays.asList(priceChange));
+                        userAdvertHistoryMap.put(adId, new ArrayList<>(Arrays.asList(priceChange)));
                     }
 
-                } catch (ExecutionException e) {
-                    LOG.error("Could not get advert from cache!", e);
-                }
             });
 
             userHistoryMap.put(userId, userAdvertHistoryMap);
-            System.out.println(" <<<<<<<<<<<<<< = " + userHistoryMap);
-
         });
     }
 
@@ -89,7 +86,8 @@ public class AdvertWatcherService implements AdvertWatcher {
     }
 
     @Override
-    public void watchAdvert(Long userId, Long advertId) {
+    public List<AdvertHistory> watchAdvert(Long userId, Long advertId) {
+        checkAdvertPrices();
         boolean newAd;
         if (watchList.containsKey(userId)) {
             newAd = watchList.get(userId).add(advertId);
@@ -98,6 +96,7 @@ public class AdvertWatcherService implements AdvertWatcher {
             newAd = true;
         }
         LOG.debug("{} watching advert id '{}' for user id: '{}'", (newAd ? "Started" : "Continue"), advertId, userId);
+        return getUserAdvertsHistory(userId);
     }
 
     @Override

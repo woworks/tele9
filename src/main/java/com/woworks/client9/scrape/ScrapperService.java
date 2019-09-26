@@ -44,7 +44,6 @@ public class ScrapperService {
 
 
     private Advert getAdvertInfo(Long advertId, Document doc) {
-        System.out.println("====== + " + doc);
         String title = doc.select("meta[property=og:title]").attr("content");
         String description = null;
         Element descriptionElement = doc.select("div[itemprop=description]").first();
