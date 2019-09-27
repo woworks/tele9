@@ -1,12 +1,10 @@
 package com.woworks.bot9;
 
-import com.woworks.client9.model.Advert;
 import com.woworks.client9.model.AdvertHistory;
 import com.woworks.scheduling.AdvertWatcherException;
 import com.woworks.scheduling.AdvertWatcherService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -31,7 +29,12 @@ public class BotCommandProcessor implements CommandProcessor {
     }
 
     @Override
-    public SendMessage process(TelegramLongPollingBot bot, Update update) {
+    public void setBot(Watch999Bot watch999Bot) {
+        this.advertWatcherService.setBot(watch999Bot);
+    }
+
+    @Override
+    public SendMessage process(Update update) {
         String messageText = update.getMessage().getText();
         String[] messageArray = messageText.split(" ");
         String command = messageArray[0];
@@ -103,7 +106,7 @@ public class BotCommandProcessor implements CommandProcessor {
                     .setText("There is no advert with this Advert Id: " + parameter);
         }
 
-        List<AdvertHistory> watchHistoryList = advertWatcherService.watchAdvert(userId, advertId);
+        List<AdvertHistory> watchHistoryList = advertWatcherService.watchAdvert(userId, advertId, chatId);
         String watchHistoryListFormatted = getWatchHistoryListFormatted(watchHistoryList);
         return new SendMessage()
                 .setChatId(chatId)
@@ -111,7 +114,7 @@ public class BotCommandProcessor implements CommandProcessor {
                 .setText(watchHistoryListFormatted);
     }
 
-    SendMessage getUnwatchMessage(Long chatId, Integer userId, String parameter) {
+    private SendMessage getUnwatchMessage(Long chatId, Integer userId, String parameter) {
         Long advertId;
         try {
             advertId = Long.parseLong(parameter);
@@ -136,7 +139,7 @@ public class BotCommandProcessor implements CommandProcessor {
                 .setText(watchHistoryListFormatted);
     }
 
-    private String getWatchHistoryListFormatted(List<AdvertHistory> watchHistoryList) {
+    public static String getWatchHistoryListFormatted(List<AdvertHistory> watchHistoryList) {
         StringBuilder result = new StringBuilder();
         watchHistoryList.forEach(advertHistory -> {
             result.append(String.format("<a href=\"https://999.md/ru/%s\">%s</a> - %s \n",
@@ -149,11 +152,10 @@ public class BotCommandProcessor implements CommandProcessor {
             result.append("--------------+---------------------+\n");
             result.append("  Price       +        Date         |\n");
             result.append("--------------+---------------------+\n");
-            advertHistory.getPriceHistory().forEach(priceChange -> {
-                result.append(String.format(" %11s  | %18s |\n",
-                        priceChange.getPrice().toPrint(),
-                        priceChange.getDateTime().format(DateTimeFormatter.ofPattern("YYYY/MM/dd HH:mm:ss"))));
-            });
+            advertHistory.getPriceHistory().forEach(priceChange ->
+                    result.append(String.format(" %11s  | %18s |\n",
+                    priceChange.getPrice().toPrint(),
+                    priceChange.getDateTime().format(DateTimeFormatter.ofPattern("YYYY/MM/dd HH:mm:ss")))));
             result.append("--------------+---------------------+\n");
             result.append("</pre>");
 
@@ -182,9 +184,8 @@ public class BotCommandProcessor implements CommandProcessor {
 
     static String getHelp() {
         StringBuilder reply = new StringBuilder();
-        Arrays.asList(Commands.values()).forEach(com -> {
-                    reply.append(Commands.getHelp(com.getCommand()) + "\n");
-                }
+        Arrays.asList(Commands.values()).forEach(
+                com -> reply.append(Commands.getHelp(com.getCommand()) + "\n")
         );
         reply.append("/watch 61587874");
         return reply.toString();

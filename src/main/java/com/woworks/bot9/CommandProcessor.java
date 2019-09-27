@@ -8,6 +8,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
  * @author Artiom Slastin
  */
 public interface CommandProcessor {
+    void setBot(Watch999Bot watch999Bot);
+
     public enum Commands {
         HELP("/help"),
         WATCH("/watch"),
@@ -55,5 +57,5 @@ public interface CommandProcessor {
         }
     }
 
-    SendMessage process(TelegramLongPollingBot bot, Update update);
+    SendMessage process(Update update);
 }

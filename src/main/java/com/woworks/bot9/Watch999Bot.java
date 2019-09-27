@@ -16,6 +16,7 @@ public class Watch999Bot extends TelegramLongPollingBot {
 
     Watch999Bot(BotCommandProcessor botCommandProcessor) {
         this.botCommandProcessor = botCommandProcessor;
+        this.botCommandProcessor.setBot(this);
     }
 
     @Override
@@ -23,7 +24,7 @@ public class Watch999Bot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             LOG.info("Text From Bot: {}", update.getMessage().getText());
             LOG.info("Text From Bot: UserId: {}", update.getMessage().getFrom());
-            SendMessage sendMessage = botCommandProcessor.process(this, update);
+            SendMessage sendMessage = botCommandProcessor.process(update);
             try {
                 execute(sendMessage);
             } catch (TelegramApiException e) {

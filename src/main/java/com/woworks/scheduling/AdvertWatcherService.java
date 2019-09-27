@@ -4,6 +4,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
+import com.woworks.bot9.BotCommandProcessor;
+import com.woworks.bot9.Watch999Bot;
 import com.woworks.client9.model.Advert;
 import com.woworks.client9.model.AdvertHistory;
 import com.woworks.client9.model.PriceChange;
@@ -12,6 +14,9 @@ import com.woworks.client9.scrape.ScrapperService;
 import io.quarkus.scheduler.Scheduled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -19,13 +24,16 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class AdvertWatcherService implements AdvertWatcher {
     static final int ADVERT_EXPIRE_MINS = 10;
     static final String CHECK_PRICE_INTERVAL = "20s";
+    private static Watch999Bot bot;
     private static final Logger LOG = LoggerFactory.getLogger("AdvertWatcherService");
     private final ScrapperService scrapperService;
+    private final Map<Long, Long> userChatMap = new HashMap<>();
     private final Map<Long, Set<Long>> watchList = new HashMap<>();
     private final Map<Long, Map<Long, List<PriceChange>>> userHistoryMap = new HashMap<>();
 
@@ -71,6 +79,7 @@ public class AdvertWatcherService implements AdvertWatcher {
                     if (advertHistory.isEmpty() || priceChanged(advertHistory, advert)) {
                         advertHistory.add(priceChange);
                         userAdvertHistoryMap.put(adId, advertHistory);
+                        sendPriceChangeMessage(userId, adId);
                     }
                 } else {
                     userAdvertHistoryMap.put(adId, new ArrayList<>(Arrays.asList(priceChange)));
@@ -80,6 +89,21 @@ public class AdvertWatcherService implements AdvertWatcher {
 
             userHistoryMap.put(userId, userAdvertHistoryMap);
         });
+    }
+
+    private void sendPriceChangeMessage(Long userId, Long adId) {
+        String messageText = BotCommandProcessor.getWatchHistoryListFormatted(
+                getUserAdvertsHistory(userId).stream().filter(advertHistory -> advertHistory.getAdvert().getId().equals(adId)).collect(Collectors.toList())
+        );
+        SendMessage message = new SendMessage()
+                .setChatId(userChatMap.get(userId))
+                .setParseMode(ParseMode.HTML)
+                .setText(messageText);
+        try {
+            bot.execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean priceChanged(List<PriceChange> advertHistory, Advert advert) {
@@ -93,8 +117,9 @@ public class AdvertWatcherService implements AdvertWatcher {
     }
 
     @Override
-    public List<AdvertHistory> watchAdvert(long userId, Long advertId) {
+    public List<AdvertHistory> watchAdvert(long userId, Long advertId, Long chatId) {
         boolean newAd;
+        userChatMap.put(userId, chatId);
         if (watchList.containsKey(userId)) {
             newAd = watchList.get(userId).add(advertId);
         } else {
@@ -151,5 +176,9 @@ public class AdvertWatcherService implements AdvertWatcher {
     @Override
     public Advert getAdvert(long advertId) throws ExecutionException {
         return  advertsCache.get((Long) advertId);
+    }
+
+    public void setBot(Watch999Bot bot) {
+        this.bot = bot;
     }
 }

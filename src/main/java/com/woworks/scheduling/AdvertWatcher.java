@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 
 public interface AdvertWatcher {
 
-    List<AdvertHistory> watchAdvert(long userId, Long advertId);
+    List<AdvertHistory> watchAdvert(long userId, Long advertId, Long chatId);
 
     void unwatchAdvert(long userId, Long advertId) throws AdvertWatcherException;
 

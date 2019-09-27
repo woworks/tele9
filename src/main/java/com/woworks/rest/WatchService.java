@@ -31,13 +31,6 @@ public class WatchService {
     }
 
     @GET
-    @Path("/users/{id}/watch/{advertId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<AdvertHistory> watch(@PathParam("id") Long userId, @PathParam("advertId") Long advertId) {
-        return advertWatcherService.watchAdvert(userId, advertId);
-    }
-
-    @GET
     @Path("/users/{id}/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Set<Long> list(@PathParam("id") Long userId) {
