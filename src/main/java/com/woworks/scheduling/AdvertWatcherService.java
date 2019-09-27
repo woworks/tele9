@@ -102,7 +102,7 @@ public class AdvertWatcherService implements AdvertWatcher {
         try {
             bot.execute(message);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            LOG.error("Bot Could Not Execute a message", e);
         }
     }
 
@@ -178,7 +178,7 @@ public class AdvertWatcherService implements AdvertWatcher {
         return  advertsCache.get((Long) advertId);
     }
 
-    public void setBot(Watch999Bot bot) {
-        this.bot = bot;
+    public void setBot(Watch999Bot bot9) {
+        bot = bot9;
     }
 }

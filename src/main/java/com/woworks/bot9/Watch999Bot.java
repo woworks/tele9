@@ -35,15 +35,11 @@ public class Watch999Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        String botName = ApplicationProperties.INSTANCE.getValue("org.telegram.bot.name");
-        //LOG.debug("Bot Name = {}", botName);
-        return botName;
+        return ApplicationProperties.INSTANCE.getValue("org.telegram.bot.name");
     }
 
     @Override
     public String getBotToken() {
-        String botToken = ApplicationProperties.INSTANCE.getValue("org.telegram.bot.token");
-        //LOG.debug("Bot token = {}", botToken);
-        return botToken;
+        return ApplicationProperties.INSTANCE.getValue("org.telegram.bot.token");
     }
 }
