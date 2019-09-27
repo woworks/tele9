@@ -1,6 +1,9 @@
 package com.woworks.client9.model;
 
 public class Price {
+
+    public static final String NO_PRICE = "NoPrice";
+
     private String unit;
     private double value;
 
@@ -36,11 +39,19 @@ public class Price {
         return result;
     }
 
+    public String toPrint() {
+        return value + " " + unit;
+    }
+
     @Override
     public String toString() {
         return "Price{" +
                 "unit='" + unit + '\'' +
                 ", value=" + value +
                 '}';
+    }
+
+    public static Price noPrice() {
+        return new Price(NO_PRICE, 0);
     }
 }

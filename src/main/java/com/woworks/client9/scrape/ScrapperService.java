@@ -61,8 +61,9 @@ public class ScrapperService {
         try {
             Double priceValue = Double.parseDouble(doc.select("span[itemprop=price]").first().html().replace(" ", ""));
             advert.setPrice(new Price(priceCurrency, priceValue));
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | NullPointerException e) {
             LOG.warn("No price found");
+            advert.setPrice(Price.noPrice());
         }
         return advert;
     }

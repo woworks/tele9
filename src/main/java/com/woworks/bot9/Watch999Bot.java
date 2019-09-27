@@ -20,13 +20,12 @@ public class Watch999Bot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
             LOG.info("Text From Bot: {}", update.getMessage().getText());
             LOG.info("Text From Bot: UserId: {}", update.getMessage().getFrom());
-            SendMessage sendMessage = botCommandProcessor.process(update);
+            SendMessage sendMessage = botCommandProcessor.process(this, update);
             try {
-                execute(sendMessage); // Call method to send the message
+                execute(sendMessage);
             } catch (TelegramApiException e) {
                 LOG.error("Could not execute telegram message", e);
             }
@@ -36,14 +35,14 @@ public class Watch999Bot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         String botName = ApplicationProperties.INSTANCE.getValue("org.telegram.bot.name");
-        LOG.info("Bot Name = {}", botName);
+        //LOG.debug("Bot Name = {}", botName);
         return botName;
     }
 
     @Override
     public String getBotToken() {
         String botToken = ApplicationProperties.INSTANCE.getValue("org.telegram.bot.token");
-        LOG.info("Bot token = {}", botToken);
+        //LOG.debug("Bot token = {}", botToken);
         return botToken;
     }
 }

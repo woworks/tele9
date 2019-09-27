@@ -44,8 +44,8 @@ public class AdvertWatcherService implements AdvertWatcher {
 
     @Scheduled(every = CHECK_PRICE_INTERVAL)
     void checkAdvertPrices() {
-        LOG.info("Checking advert prices...");
-        LOG.info("Watch list: {}", watchList);
+        LOG.debug("Checking advert prices...");
+        LOG.debug("Watch list: {}", watchList);
         watchList.forEach((userId, userAdList) -> {
             LOG.debug("userId: '{}' -> '{}'", userId, userAdList);
             Map<Long, List<PriceChange>> userAdvertHist = userHistoryMap.get(userId);
@@ -53,25 +53,18 @@ public class AdvertWatcherService implements AdvertWatcher {
 
             userAdList.forEach(adId -> {
 
-                    //Advert advert = advertsCache.get(adId);
                     Advert advert = scrapperService.getAdvert(adId);
                     advertsCache.put(adId, advert);
-                    //LOG.debug("advert: {}", advert);
                     PriceChange priceChange = new PriceChange(advert.getPrice(), LocalDateTime.now());
                     List<PriceChange> advertHistory = new ArrayList<>();
                     if (!userAdvertHistoryMap.isEmpty()) {
-                        LOG.debug("userAdvertHistoryMap NOT NEW  = {}", userAdvertHistoryMap);
                         List<PriceChange> advertHist = userAdvertHistoryMap.get(adId);
                         advertHistory = advertHist != null ? advertHist : new ArrayList<>();
                         if (advertHistory.isEmpty() || priceChanged(advertHistory, advert)) {
-                            LOG.debug("ADV HIST = {}; price change = {}", advertHistory, priceChange);
                             advertHistory.add(priceChange);
                             userAdvertHistoryMap.put(adId, advertHistory);
                         }
-
                     } else {
-                        LOG.debug("NEW ADV HIST = {}; price change = {}", advertHistory, priceChange);
-                        LOG.debug("userAdvertHistoryMap NEW  = {}", userAdvertHistoryMap.keySet());
                         userAdvertHistoryMap.put(adId, new ArrayList<>(Arrays.asList(priceChange)));
                     }
 
@@ -86,8 +79,13 @@ public class AdvertWatcherService implements AdvertWatcher {
     }
 
     @Override
-    public List<AdvertHistory> watchAdvert(Long userId, Long advertId) {
-        checkAdvertPrices();
+    public void stopWatch(long userId) {
+        watchList.remove(userId);
+        userHistoryMap.remove(userId);
+    }
+
+    @Override
+    public List<AdvertHistory> watchAdvert(long userId, Long advertId) {
         boolean newAd;
         if (watchList.containsKey(userId)) {
             newAd = watchList.get(userId).add(advertId);
@@ -95,6 +93,7 @@ public class AdvertWatcherService implements AdvertWatcher {
             watchList.put(userId, Sets.newHashSet(advertId));
             newAd = true;
         }
+        checkAdvertPrices();
         LOG.debug("{} watching advert id '{}' for user id: '{}'", (newAd ? "Started" : "Continue"), advertId, userId);
         return getUserAdvertsHistory(userId);
     }
@@ -131,7 +130,7 @@ public class AdvertWatcherService implements AdvertWatcher {
             try {
                 advertHistoryList.add(new AdvertHistory(advertsCache.get(adId), userAdvertHistory.get(adId)));
             } catch (ExecutionException e) {
-                e.printStackTrace();
+                LOG.error("Could not get advert from cache", e);
             }
         });
 

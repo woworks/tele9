@@ -7,11 +7,13 @@ import java.util.Set;
 
 public interface AdvertWatcher {
 
-    List<AdvertHistory> watchAdvert(Long userId, Long advertId);
+    List<AdvertHistory> watchAdvert(long userId, Long advertId);
 
     void unwatchAdvert(Long userId, Long advertId);
 
     Set<Long> getUserAdvertIds(Long userId);
 
     List<AdvertHistory> getUserAdvertsHistory(Long userId);
+
+    void stopWatch(long userId);
 }
