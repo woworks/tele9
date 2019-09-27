@@ -25,20 +25,21 @@ public class ScrapperService {
     String lang;
 
 
-    public Advert getAdvert(Long advertId) {
+    public Advert getAdvert(Long advertId) throws ScrapperException {
         Document doc = null;
         try {
             doc = Jsoup.connect(advertUrl(advertId)).get();
         } catch (HttpStatusException e) {
-            LOG.error("There is no advert with this id = '{}'; error code = '{}'", advertId, e.getStatusCode());
-            return null;
+            String errorMessage = String.format("There is no advert with this id = '%s'; error code = '%s'", advertId, e.getStatusCode());
+            LOG.error(errorMessage, e);
+            throw new ScrapperException(errorMessage);
         } catch (IOException e) {
             LOG.error("Could not get the advert", e);
         }
         return getAdvertInfo(advertId, doc);
     }
 
-    private String advertUrl(Long id){
+    private String advertUrl(Long id) {
         return String.format("%s/%s/%s", url, lang, id);
     }
 
@@ -51,7 +52,6 @@ public class ScrapperService {
             description = descriptionElement.html();
         }
         String priceCurrency = doc.select("span[itemprop=currency]").attr("content");
-
 
 
         Advert advert = new Advert();

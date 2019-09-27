@@ -1,6 +1,8 @@
 package com.woworks.bot9;
 
+import com.woworks.client9.model.Advert;
 import com.woworks.client9.model.AdvertHistory;
+import com.woworks.scheduling.AdvertWatcherException;
 import com.woworks.scheduling.AdvertWatcherService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import javax.inject.Inject;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @ApplicationScoped
 public class BotCommandProcessor implements CommandProcessor {
@@ -35,15 +38,14 @@ public class BotCommandProcessor implements CommandProcessor {
 
         if ((messageArray.length == 1 &&
                 (!Commands.HISTORY.toString().equals(command) &&
-                (!Commands.STOP.toString().equals(command)) &&
-                (!Commands.HELP.toString().equals(command))
+                        (!Commands.STOP.toString().equals(command)) &&
+                        (!Commands.HELP.toString().equals(command))
                 )) ||
                 (messageArray.length > 2)) {
             return getBadCommand(update.getMessage().getChatId(), messageText);
         }
 
         String parameter = messageArray.length == 1 ? "" : messageText.split(" ")[1];
-
 
         SendMessage replyMessage;
         switch (command) {
@@ -54,7 +56,7 @@ public class BotCommandProcessor implements CommandProcessor {
                 replyMessage = getWatchMessage(update.getMessage().getChatId(), update.getMessage().getFrom().getId(), parameter);
                 break;
             case "/unwatch":
-                replyMessage = getHelpMessage(update.getMessage().getChatId());
+                replyMessage = getUnwatchMessage(update.getMessage().getChatId(), update.getMessage().getFrom().getId(), parameter);
                 break;
             case "/prices":
                 replyMessage = getPricesMessage(update.getMessage().getChatId(), update.getMessage().getFrom().getId());
@@ -63,7 +65,7 @@ public class BotCommandProcessor implements CommandProcessor {
                 replyMessage = getStopMessage(update.getMessage().getChatId(), update.getMessage().getFrom().getId());
                 break;
             default:
-                replyMessage = getBadCommand(update.getMessage().getChatId() ,command);
+                replyMessage = getBadCommand(update.getMessage().getChatId(), command);
         }
 
         return replyMessage;
@@ -90,7 +92,17 @@ public class BotCommandProcessor implements CommandProcessor {
     }
 
     SendMessage getWatchMessage(Long chatId, Integer userId, String parameter) {
-        Long advertId = Long.parseLong(parameter);
+        Long advertId;
+        try {
+            advertId = Long.parseLong(parameter);
+            advertWatcherService.getAdvert(advertId);
+        } catch (ExecutionException | NumberFormatException e) {
+            return new SendMessage()
+                    .setChatId(chatId)
+                    .setParseMode(ParseMode.HTML)
+                    .setText("There is no advert with this Advert Id: " + parameter);
+        }
+
         List<AdvertHistory> watchHistoryList = advertWatcherService.watchAdvert(userId, advertId);
         String watchHistoryListFormatted = getWatchHistoryListFormatted(watchHistoryList);
         return new SendMessage()
@@ -99,9 +111,34 @@ public class BotCommandProcessor implements CommandProcessor {
                 .setText(watchHistoryListFormatted);
     }
 
+    SendMessage getUnwatchMessage(Long chatId, Integer userId, String parameter) {
+        Long advertId;
+        try {
+            advertId = Long.parseLong(parameter);
+            advertWatcherService.unwatchAdvert(userId, advertId);
+
+        } catch (NumberFormatException | AdvertWatcherException e) {
+            return new SendMessage()
+                    .setChatId(chatId)
+                    .setParseMode(ParseMode.HTML)
+                    .setText("There is no advert with this Advert Id: " + parameter);
+        }
+
+
+        List<AdvertHistory> watchHistoryList = advertWatcherService.getUserAdvertsHistory(userId);
+        String watchHistoryListFormatted = getWatchHistoryListFormatted(watchHistoryList);
+        if (watchHistoryListFormatted.isEmpty()) {
+            watchHistoryListFormatted = String.format("Removed '%s' from watch", parameter);
+        }
+        return new SendMessage()
+                .setChatId(chatId)
+                .setParseMode(ParseMode.HTML)
+                .setText(watchHistoryListFormatted);
+    }
+
     private String getWatchHistoryListFormatted(List<AdvertHistory> watchHistoryList) {
         StringBuilder result = new StringBuilder();
-        watchHistoryList.forEach( advertHistory -> {
+        watchHistoryList.forEach(advertHistory -> {
             result.append(String.format("<a href=\"https://999.md/ru/%s\">%s</a> - %s \n",
                     advertHistory.getAdvert().getId(),
                     advertHistory.getAdvert().getId(),
@@ -112,7 +149,7 @@ public class BotCommandProcessor implements CommandProcessor {
             result.append("--------------+---------------------+\n");
             result.append("  Price       +        Date         |\n");
             result.append("--------------+---------------------+\n");
-            advertHistory.getPriceHistory().forEach( priceChange -> {
+            advertHistory.getPriceHistory().forEach(priceChange -> {
                 result.append(String.format(" %11s  | %18s |\n",
                         priceChange.getPrice().toPrint(),
                         priceChange.getDateTime().format(DateTimeFormatter.ofPattern("YYYY/MM/dd HH:mm:ss"))));
@@ -122,13 +159,7 @@ public class BotCommandProcessor implements CommandProcessor {
 
         });
 
-        return  result.toString();
-    }
-
-    String getUnwatch(Long userId, String parameter) {
-        Long advertId = Long.parseLong(parameter);
-        advertWatcherService.unwatchAdvert(userId, advertId);
-        return " get watch command";
+        return result.toString();
     }
 
     private static SendMessage getHelpMessage(Long chatId) {

@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import com.woworks.client9.model.Advert;
 import com.woworks.client9.model.AdvertHistory;
 import com.woworks.client9.model.PriceChange;
+import com.woworks.client9.scrape.ScrapperException;
 import com.woworks.client9.scrape.ScrapperService;
 import io.quarkus.scheduler.Scheduled;
 import org.slf4j.Logger;
@@ -53,20 +54,27 @@ public class AdvertWatcherService implements AdvertWatcher {
 
             userAdList.forEach(adId -> {
 
-                    Advert advert = scrapperService.getAdvert(adId);
-                    advertsCache.put(adId, advert);
-                    PriceChange priceChange = new PriceChange(advert.getPrice(), LocalDateTime.now());
-                    List<PriceChange> advertHistory = new ArrayList<>();
-                    if (!userAdvertHistoryMap.isEmpty()) {
-                        List<PriceChange> advertHist = userAdvertHistoryMap.get(adId);
-                        advertHistory = advertHist != null ? advertHist : new ArrayList<>();
-                        if (advertHistory.isEmpty() || priceChanged(advertHistory, advert)) {
-                            advertHistory.add(priceChange);
-                            userAdvertHistoryMap.put(adId, advertHistory);
-                        }
-                    } else {
-                        userAdvertHistoryMap.put(adId, new ArrayList<>(Arrays.asList(priceChange)));
+                Advert advert;
+                try {
+                    advert = scrapperService.getAdvert(adId);
+                } catch (ScrapperException e) {
+                    LOG.warn("Could not get the advert", e);
+                    return;
+                }
+
+                advertsCache.put(adId, advert);
+                PriceChange priceChange = new PriceChange(advert.getPrice(), LocalDateTime.now());
+                List<PriceChange> advertHistory = new ArrayList<>();
+                if (!userAdvertHistoryMap.isEmpty()) {
+                    List<PriceChange> advertHist = userAdvertHistoryMap.get(adId);
+                    advertHistory = advertHist != null ? advertHist : new ArrayList<>();
+                    if (advertHistory.isEmpty() || priceChanged(advertHistory, advert)) {
+                        advertHistory.add(priceChange);
+                        userAdvertHistoryMap.put(adId, advertHistory);
                     }
+                } else {
+                    userAdvertHistoryMap.put(adId, new ArrayList<>(Arrays.asList(priceChange)));
+                }
 
             });
 
@@ -99,34 +107,37 @@ public class AdvertWatcherService implements AdvertWatcher {
     }
 
     @Override
-    public void unwatchAdvert(Long userId, Long advertId) {
+    public void unwatchAdvert(long userId, Long advertId) throws AdvertWatcherException {
         if (watchList.containsKey(userId)) {
             watchList.get(userId).remove(advertId);
+            userHistoryMap.get(userId).remove(advertId);
         } else {
-            LOG.warn("User: '{}' has no advert with id = '{}'", userId, advertId);
+            String error = String.format("User: '%s' has no advert with id = '%s'", userId, advertId);
+            LOG.warn(error);
+            throw new AdvertWatcherException(error);
         }
         LOG.debug("Removed advert id '{}' for user id: '{}'", advertId, userId);
     }
 
     @Override
-    public Set<Long> getUserAdvertIds(Long userId) {
+    public Set<Long> getUserAdvertIds(long userId) {
         Set<Long> userWatchList = watchList.get(userId);
         LOG.debug("User id: '{}' has list: '{}'", userId, userWatchList);
         return userWatchList;
     }
 
     @Override
-    public List<AdvertHistory> getUserAdvertsHistory(Long userId) {
+    public List<AdvertHistory> getUserAdvertsHistory(long userId) {
         LOG.debug("userHistoryMap: '{}'", userHistoryMap);
         Map<Long, List<PriceChange>> userAdvertHistory = userHistoryMap.get(userId);
         if (userAdvertHistory == null) {
             return new ArrayList<>();
         }
 
-        List<AdvertHistory> advertHistoryList  = new ArrayList<>();
+        List<AdvertHistory> advertHistoryList = new ArrayList<>();
         LOG.debug("User id: '{}' has history: '{}'", userId, userAdvertHistory);
 
-        userAdvertHistory.forEach( (adId, changesList) -> {
+        userAdvertHistory.forEach((adId, changesList) -> {
             try {
                 advertHistoryList.add(new AdvertHistory(advertsCache.get(adId), userAdvertHistory.get(adId)));
             } catch (ExecutionException e) {
@@ -135,5 +146,10 @@ public class AdvertWatcherService implements AdvertWatcher {
         });
 
         return advertHistoryList;
+    }
+
+    @Override
+    public Advert getAdvert(long advertId) throws ExecutionException {
+        return  advertsCache.get((Long) advertId);
     }
 }
