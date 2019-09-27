@@ -3,6 +3,7 @@ package com.woworks.rest;
 import com.woworks.client9.model.Advert;
 import com.woworks.client9.model.Category;
 import com.woworks.client9.restclient.CategoryService;
+import com.woworks.client9.scrape.ScrapperException;
 import com.woworks.client9.scrape.ScrapperService;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -52,7 +53,7 @@ public class HelloService {
     @GET
     @Path("/adverts/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Advert advert(@PathParam("id") Long id) {
+    public Advert advert(@PathParam("id") Long id) throws ScrapperException {
         return scrapperService.getAdvert(id);
     }
 

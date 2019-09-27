@@ -16,17 +16,17 @@ public class Watch999Bot extends TelegramLongPollingBot {
 
     Watch999Bot(BotCommandProcessor botCommandProcessor) {
         this.botCommandProcessor = botCommandProcessor;
+        this.botCommandProcessor.setBot(this);
     }
 
     @Override
     public void onUpdateReceived(Update update) {
-        // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
             LOG.info("Text From Bot: {}", update.getMessage().getText());
             LOG.info("Text From Bot: UserId: {}", update.getMessage().getFrom());
             SendMessage sendMessage = botCommandProcessor.process(update);
             try {
-                execute(sendMessage); // Call method to send the message
+                execute(sendMessage);
             } catch (TelegramApiException e) {
                 LOG.error("Could not execute telegram message", e);
             }
@@ -35,15 +35,11 @@ public class Watch999Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        String botName = ApplicationProperties.INSTANCE.getValue("org.telegram.bot.name");
-        LOG.info("Bot Name = {}", botName);
-        return botName;
+        return ApplicationProperties.INSTANCE.getValue("org.telegram.bot.name");
     }
 
     @Override
     public String getBotToken() {
-        String botToken = ApplicationProperties.INSTANCE.getValue("org.telegram.bot.token");
-        LOG.info("Bot token = {}", botToken);
-        return botToken;
+        return ApplicationProperties.INSTANCE.getValue("org.telegram.bot.token");
     }
 }
