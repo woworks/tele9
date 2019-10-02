@@ -1,6 +1,6 @@
 package com.woworks.bot9;
 
-import com.woworks.common.ApplicationProperties;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -35,11 +35,11 @@ public class Watch999Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return ApplicationProperties.INSTANCE.getValue("org.telegram.bot.name");
+        return ConfigProvider.getConfig().getValue("org.telegram.bot.name", String.class);
     }
 
     @Override
     public String getBotToken() {
-        return ApplicationProperties.INSTANCE.getValue("org.telegram.bot.token");
+        return ConfigProvider.getConfig().getValue("org.telegram.bot.token", String.class);
     }
 }

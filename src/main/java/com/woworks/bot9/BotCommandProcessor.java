@@ -187,7 +187,6 @@ public class BotCommandProcessor implements CommandProcessor {
         Arrays.asList(Commands.values()).forEach(
                 com -> reply.append(Commands.getHelp(com.getCommand()) + "\n")
         );
-        reply.append("/watch 61587874");
         return reply.toString();
     }
 }

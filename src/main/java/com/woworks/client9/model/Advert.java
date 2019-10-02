@@ -13,42 +13,51 @@ public class Advert {
     private OfferType offerType;
     private State state;
 
+    public Advert(Long id, String title, Price price, String body, Categories categories, Feature[] features, OfferType offerType, State state) {
+        this.id = id;
+        this.title = title;
+        this.price = price;
+        this.body = body;
+        this.categories = categories;
+        this.features = features;
+        this.offerType = offerType;
+        this.state = state;
+    }
+
+    public Advert(Long id, String title, Price price, String body) {
+        this.id = id;
+        this.title = title;
+        this.price = price;
+        this.body = body;
+    }
 
     /**
      * Body of advert
      */
     public String getBody() { return body; }
-    public void setBody(String value) { this.body = value; }
 
     public Categories getCategories() { return categories; }
-    public void setCategories(Categories value) { this.categories = value; }
 
     public Feature[] getFeatures() { return features; }
-    public void setFeatures(Feature[] value) { this.features = value; }
 
     /**
      * ID of the advert
      */
     public Long getId() { return id; }
-    public void setId(Long value) { this.id = value; }
 
     public OfferType getOfferType() { return offerType; }
-    public void setOfferType(OfferType value) { this.offerType = value; }
 
     public Price getPrice() { return price; }
-    public void setPrice(Price value) { this.price = value; }
 
     /**
      * State of advert
      */
     public State getState() { return state; }
-    public void setState(State value) { this.state = value; }
 
     /**
      * Title of advert
      */
     public String getTitle() { return title; }
-    public void setTitle(String value) { this.title = value; }
 
     @Override
     public String toString() {
