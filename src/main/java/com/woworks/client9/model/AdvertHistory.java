@@ -7,6 +7,9 @@ public class AdvertHistory {
     private Advert advert;
     private List<PriceChange> priceHistory = new ArrayList<>();
 
+    public AdvertHistory() {
+    }
+
     public AdvertHistory(Advert advert, List<PriceChange> priceHistory) {
         this.advert = advert;
         this.priceHistory = priceHistory;
@@ -35,4 +38,5 @@ public class AdvertHistory {
                 ", priceHistory=" + priceHistory +
                 '}';
     }
+
 }

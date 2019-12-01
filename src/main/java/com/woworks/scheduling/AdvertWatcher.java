@@ -9,9 +9,9 @@ import java.util.concurrent.ExecutionException;
 
 public interface AdvertWatcher {
 
-    List<AdvertHistory> watchAdvert(long userId, Long advertId, Long chatId);
+    List<AdvertHistory> watchAdvert(long userId, long advertId, long chatId);
 
-    void unwatchAdvert(long userId, Long advertId) throws AdvertWatcherException;
+    void unwatchAdvert(long userId, long advertId) throws AdvertWatcherException;
 
     Set<Long> getUserAdvertIds(long userId);
 

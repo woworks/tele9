@@ -1,5 +1,6 @@
 package com.woworks.bot9;
 
+import com.woworks.client9.model.Advert;
 import com.woworks.client9.model.AdvertHistory;
 import com.woworks.scheduling.AdvertWatcherException;
 import com.woworks.scheduling.AdvertWatcherService;
@@ -14,14 +15,13 @@ import javax.inject.Inject;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @ApplicationScoped
 public class BotCommandProcessor implements CommandProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger("BotCommandProcessor");
 
-    AdvertWatcherService advertWatcherService;
+    private final AdvertWatcherService advertWatcherService;
 
     @Inject
     public BotCommandProcessor(AdvertWatcherService advertWatcherService) {
@@ -30,7 +30,7 @@ public class BotCommandProcessor implements CommandProcessor {
 
     @Override
     public void setBot(Watch999Bot watch999Bot) {
-        this.advertWatcherService.setBot(watch999Bot);
+        this.advertWatcherService.getWatchHistory().setBot(watch999Bot);
     }
 
     @Override
@@ -98,12 +98,18 @@ public class BotCommandProcessor implements CommandProcessor {
         Long advertId;
         try {
             advertId = Long.parseLong(parameter);
-            advertWatcherService.getAdvert(advertId);
-        } catch (ExecutionException | NumberFormatException e) {
+            Advert advert = advertWatcherService.getAdvert(advertId);
+            if (advert == null) {
+                return new SendMessage()
+                        .setChatId(chatId)
+                        .setParseMode(ParseMode.HTML)
+                        .setText("There is no advert with this Advert Id: " + parameter);
+            }
+        } catch (NumberFormatException e) {
             return new SendMessage()
                     .setChatId(chatId)
                     .setParseMode(ParseMode.HTML)
-                    .setText("There is no advert with this Advert Id: " + parameter);
+                    .setText("Advert Id: " + parameter + " is not valid");
         }
 
         List<AdvertHistory> watchHistoryList = advertWatcherService.watchAdvert(userId, advertId, chatId);
@@ -130,8 +136,11 @@ public class BotCommandProcessor implements CommandProcessor {
 
         List<AdvertHistory> watchHistoryList = advertWatcherService.getUserAdvertsHistory(userId);
         String watchHistoryListFormatted = getWatchHistoryListFormatted(watchHistoryList);
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> = watchHistoryListFormatted = " + watchHistoryListFormatted);
         if (watchHistoryListFormatted.isEmpty()) {
             watchHistoryListFormatted = String.format("Removed '%s' from watch", parameter);
+        } else {
+            watchHistoryListFormatted = String.format("Removed '%s' from watch \n", parameter) + watchHistoryListFormatted;
         }
         return new SendMessage()
                 .setChatId(chatId)
